@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../supabase/client";
 
 const emptyEducation = { degree: "", institution: "", start_year: "", end_year: "", description: "" };
@@ -30,6 +30,7 @@ function Resume() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
   const [authUser, setAuthUser] = useState(null);
+  const [skillDraft, setSkillDraft] = useState("");
 
   const showMessage = (text, kind = "success") => {
     setMessage({ text, kind });
@@ -219,15 +220,12 @@ function Resume() {
     );
   }
 
-  const skillInput = (value, onChange, onKey) => (
-    <input
-      type="text"
-      placeholder="Add a skill and press Enter"
-      value={value}
-      onChange={onChange}
-      onKeyDown={onKey}
-    />
-  );
+  const addSkill = () => {
+    const trimmed = skillDraft.trim();
+    if (!trimmed) return;
+    setResume((prev) => ({ ...prev, skills: [...prev.skills, trimmed] }));
+    setSkillDraft("");
+  };
 
   return (
     <div className="resume-page">
@@ -440,17 +438,21 @@ function Resume() {
           <div className="form-heading">Skills</div>
         </div>
         <div className="skills-input">
-          {skillInput(
-            "",
-            () => {},
-            (e) => {
-              if (e.key === "Enter" && e.target.value.trim()) {
+          <input
+            type="text"
+            placeholder="Add a skill and press Enter"
+            value={skillDraft}
+            onChange={(e) => setSkillDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
                 e.preventDefault();
-                setResume((prev) => ({ ...prev, skills: [...prev.skills, e.target.value.trim()] }));
-                e.target.value = "";
+                addSkill();
               }
-            }
-          )}
+            }}
+          />
+          <button type="button" className="add-btn" onClick={addSkill}>
+            Add Skill
+          </button>
           <div className="skill-chips">
             {resume.skills.map((skill, i) => (
               <span className="skill-chip" key={i}>
